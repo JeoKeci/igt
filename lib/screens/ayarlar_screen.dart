@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/auth_provider.dart';
 import 'kategori_yonetimi_screen.dart';
+import 'odeme_sekilleri_yonetimi_screen.dart';
 
 class AyarlarScreen extends ConsumerWidget {
   const AyarlarScreen({super.key});
@@ -140,7 +141,10 @@ class AyarlarScreen extends ConsumerWidget {
                       title: const Text('Ödeme Şekilleri'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ödeme şekilleri (Faz 2)')));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const OdemeSekilleriYonetimiScreen()),
+                        );
                       },
                     ),
                     ListTile(
