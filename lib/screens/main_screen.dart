@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/harcama_provider.dart';
 import '../providers/ozet_provider.dart';
+import '../providers/auth_provider.dart';
 import 'harcamalar_screen.dart';
 import 'ozet_screen.dart';
 import 'ayarlar_screen.dart';

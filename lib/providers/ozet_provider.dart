@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:igt_masraf_takip/providers/harcama_provider.dart';
 import 'package:igt_masraf_takip/providers/auth_provider.dart';
 
 /// Aylık özet provider'ı — seçili ayın özet verilerini getirir
