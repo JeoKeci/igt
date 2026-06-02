@@ -1,3 +1,5 @@
+import 'package:igt_masraf_takip/utils/formatters.dart';
+
 /// Zorunlu alan doğrulaması
 String? zorunluAlan(String? value) {
   if (value == null || value.trim().isEmpty) {
@@ -7,15 +9,14 @@ String? zorunluAlan(String? value) {
 }
 
 /// Tutar doğrulaması: zorunlu, pozitif sayı olmalı
+/// Türkçe format desteği: "1.500,75" → 1500.75
 String? tutarValidator(String? value) {
   if (value == null || value.trim().isEmpty) {
     return 'Tutar giriniz';
   }
-  // Türkçe format desteği: virgülü noktaya çevir
-  final normalized = value.replaceAll('.', '').replaceAll(',', '.');
-  final parsed = double.tryParse(normalized);
+  final parsed = sayiParse(value);
   if (parsed == null) {
-    return 'Geçerli bir sayı giriniz';
+    return 'Geçerli bir sayı giriniz (örn: 1.500,75)';
   }
   if (parsed <= 0) {
     return 'Tutar sıfırdan büyük olmalıdır';
@@ -24,21 +25,20 @@ String? tutarValidator(String? value) {
 }
 
 /// KDV doğrulaması: 0 veya pozitif, tutar değerinden büyük olamaz
+/// Türkçe format desteği: "250,50" → 250.50
 String? kdvValidator(String? value, String? tutarStr) {
   if (value == null || value.trim().isEmpty) {
     return 'KDV giriniz';
   }
-  final normalizedKdv = value.replaceAll('.', '').replaceAll(',', '.');
-  final kdv = double.tryParse(normalizedKdv);
+  final kdv = sayiParse(value);
   if (kdv == null) {
-    return 'Geçerli bir sayı giriniz';
+    return 'Geçerli bir sayı giriniz (örn: 250,50)';
   }
   if (kdv < 0) {
     return 'KDV negatif olamaz';
   }
   if (tutarStr != null && tutarStr.trim().isNotEmpty) {
-    final normalizedTutar = tutarStr.replaceAll('.', '').replaceAll(',', '.');
-    final tutar = double.tryParse(normalizedTutar);
+    final tutar = sayiParse(tutarStr);
     if (tutar != null && kdv > tutar) {
       return 'KDV, fiş tutarından büyük olamaz';
     }

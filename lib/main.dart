@@ -11,6 +11,9 @@ Future<void> main() async {
   // Türkçe tarih formatı desteği
   await initializeDateFormatting('tr_TR', null);
 
+  // Config doğrula — eksikse anlaşılır hata ver
+  SupabaseConfig.validate();
+
   // Supabase başlat
   await Supabase.initialize(
     url: SupabaseConfig.url,

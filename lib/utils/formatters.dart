@@ -1,5 +1,15 @@
 import 'package:intl/intl.dart';
 
+/// Türkçe biçimli metni ("1.500,75") sayıya çevirir.
+/// Binlik ayraç olarak nokta, ondalık ayraç olarak virgül kabul eder.
+/// Geçersizse null döner.
+double? sayiParse(String? value) {
+  if (value == null || value.trim().isEmpty) return null;
+  // Önce binlik ayıracı (noktaları) sil, sonra ondalık virgülü noktaya çevir
+  final normalized = value.trim().replaceAll('.', '').replaceAll(',', '.');
+  return double.tryParse(normalized);
+}
+
 /// Para birimi formatı: ₺ 1.234,56
 String tutarFormat(double value) {
   final formatter = NumberFormat.currency(

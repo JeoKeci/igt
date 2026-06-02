@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'providers/auth_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_screen.dart';
 
@@ -169,22 +170,109 @@ class IGTApp extends ConsumerWidget {
   }
 }
 
-/// Kullanıcının oturum durumuna göre giriş veya ana ekranı gösterir
-class _AuthGate extends StatelessWidget {
+/// Kullanıcının oturum durumuna göre giriş veya ana ekranı gösterir.
+/// 3 durum:
+///   1) Oturum yok → LoginScreen
+///   2) Oturum var, personel kaydı yok → _PersonelYokEkrani
+///   3) Oturum var + personel kaydı var → MainScreen
+class _AuthGate extends ConsumerWidget {
   const _AuthGate();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return StreamBuilder<AuthState>(
       stream: Supabase.instance.client.auth.onAuthStateChange,
       builder: (context, snapshot) {
-        // Oturum var mı kontrol et
         final session = Supabase.instance.client.auth.currentSession;
-        if (session != null) {
-          return const MainScreen();
+
+        // 1) Oturum yok → Giriş ekranı
+        if (session == null) {
+          return const LoginScreen();
         }
-        return const LoginScreen();
+
+        // 2) Oturum var → personel kaydını kontrol et
+        final personelAsync = ref.watch(currentPersonelProvider);
+
+        return personelAsync.when(
+          loading: () => const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          ),
+          error: (e, _) => _PersonelYokEkrani(hataDetayi: e.toString()),
+          data: (personel) {
+            if (personel == null) {
+              // 3a) Personel kaydı yok
+              return const _PersonelYokEkrani();
+            }
+            // 3b) Her şey tamam → Ana ekran
+            return const MainScreen();
+          },
+        );
       },
+    );
+  }
+}
+
+/// Giriş yapılmış ama personel tablosunda kaydı olmayan kullanıcıya gösterilen ekran.
+class _PersonelYokEkrani extends ConsumerWidget {
+  final String? hataDetayi;
+  const _PersonelYokEkrani({this.hataDetayi});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.person_off_outlined,
+                size: 80,
+                color: theme.colorScheme.error,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Hesap Bağlantısı Yok',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Hesabınız henüz bir personel kaydına bağlanmamış.\n\nLütfen yöneticinizle iletişime geçin.',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (hataDetayi != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  hataDetayi!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 40),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  await Supabase.instance.client.auth.signOut();
+                },
+                icon: const Icon(Icons.logout),
+                label: const Text('Çıkış Yap'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

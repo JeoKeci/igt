@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -37,12 +38,13 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
   File? _imageFile;
   bool _isLoading = false;
 
+  // Türkçe formatlı girişten matrah hesapla: sayiParse kullanarak binlik noktaları
+  // binlik ayıraç olarak değerlendirip doğru çeviri yapar.
   double get _matrah {
-    final tutarStr = _tutarController.text.replaceAll(',', '.').replaceAll(' ', '');
-    final kdvStr = _kdvController.text.replaceAll(',', '.').replaceAll(' ', '');
-    final tutar = double.tryParse(tutarStr) ?? 0.0;
-    final kdv = double.tryParse(kdvStr) ?? 0.0;
-    return (tutar - kdv) > 0 ? (tutar - kdv) : 0.0;
+    final tutar = sayiParse(_tutarController.text) ?? 0.0;
+    final kdv = sayiParse(_kdvController.text) ?? 0.0;
+    final result = tutar - kdv;
+    return result > 0 ? result : 0.0;
   }
 
   @override
@@ -115,8 +117,9 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
         );
       }
 
-      final tutar = double.parse(_tutarController.text.replaceAll(',', '.').replaceAll(' ', ''));
-      final kdv = double.parse(_kdvController.text.replaceAll(',', '.').replaceAll(' ', ''));
+      // sayiParse: "1.500,75" → 1500.75 (binlik nokta + ondalık virgül)
+      final tutar = sayiParse(_tutarController.text) ?? 0.0;
+      final kdv = sayiParse(_kdvController.text) ?? 0.0;
 
       final data = {
         'tarih': DateFormat('yyyy-MM-dd').format(_tarih),
@@ -168,9 +171,20 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final kategoriler = ref.watch(kategorilerProvider).value ?? [];
-    final odemeSekilleri = ref.watch(odemeSekilleriProvider).value ?? [];
-    final projeler = ref.watch(projelerProvider).value ?? [];
+    final kategorilerState = ref.watch(kategorilerProvider);
+    final odemeSekilleriState = ref.watch(odemeSekilleriProvider);
+    final projelerState = ref.watch(projelerProvider);
+
+    final kategoriler = kategorilerState.value ?? [];
+    final odemeSekilleri = odemeSekilleriState.value ?? [];
+    final projeler = projelerState.value ?? [];
+
+    final hasError = kategorilerState.hasError || odemeSekilleriState.hasError || projelerState.hasError;
+    final errorMsg = [
+      if (kategorilerState.hasError) 'Kategori Hatası: ${kategorilerState.error}',
+      if (odemeSekilleriState.hasError) 'Ödeme Şekli Hatası: ${odemeSekilleriState.error}',
+      if (projelerState.hasError) 'Proje Hatası: ${projelerState.error}'
+    ].join('\n');
 
     return Scaffold(
       appBar: AppBar(
@@ -183,6 +197,14 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (hasError) ...[
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  color: Colors.red.shade100,
+                  child: Text(errorMsg, style: const TextStyle(color: Colors.red)),
+                ),
+                const SizedBox(height: 16),
+              ],
               // 1. Tarih
               GestureDetector(
                 onTap: _isLoading ? null : _selectDate,
@@ -280,8 +302,12 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Fiş Tutarı (TL)',
                         prefixIcon: Icon(Icons.attach_money),
+                        hintText: 'örn: 1.500,75',
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                      ],
                       validator: tutarValidator,
                       enabled: !_isLoading,
                     ),
@@ -293,8 +319,12 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
                       decoration: const InputDecoration(
                         labelText: 'KDV (TL)',
                         prefixIcon: Icon(Icons.percent),
+                        hintText: 'örn: 250,50',
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                      ],
                       validator: (v) => kdvValidator(v, _tutarController.text),
                       enabled: !_isLoading,
                     ),
