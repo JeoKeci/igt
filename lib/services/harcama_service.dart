@@ -98,7 +98,10 @@ class HarcamaService {
   }
 
   /// Aylık özet: toplam tutar, KDV, matrah ve dağılımlar
-  Future<Map<String, dynamic>> getOzet({required DateTime ay}) async {
+  Future<Map<String, dynamic>> getOzet({
+    required DateTime ay,
+    String? personelId,
+  }) async {
     final ilkGun = DateTime(ay.year, ay.month, 1);
     final sonGun = DateTime(ay.year, ay.month + 1, 0);
 
@@ -106,12 +109,18 @@ class HarcamaService {
     final sonGunStr = sonGun.toIso8601String().split('T').first;
 
     // Ana harcama verilerini çek
-    final harcamalar = await _client
+    var query = _client
         .from(AppConstants.tabloHarcamalar)
         .select('fis_tutari, kdv, matrah, kategori_id, odeme_sekli_id, personel_id, kategoriler(ad), odeme_sekilleri(ad), personel!harcamalar_personel_id_fkey(ad_soyad)')
         .eq('iptal', false)
         .gte('tarih', ilkGunStr)
         .lte('tarih', sonGunStr);
+
+    if (personelId != null) {
+      query = query.eq('personel_id', personelId);
+    }
+
+    final harcamalar = await query;
 
     double toplamTutar = 0;
     double toplamKdv = 0;

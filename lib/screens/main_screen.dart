@@ -17,18 +17,49 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = const [
-    HarcamalarScreen(),
-    OzetScreen(),
-    AyarlarScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    // Mevcut personeli dinle
+    final personelAsync = ref.watch(currentPersonelProvider);
+    
+    // Saha personeli mi kontrolü
+    final isSaha = personelAsync.value?.isSaha ?? false;
+    
+    // Saha personeline ayarları gösterme
+    final activeScreens = [
+      const HarcamalarScreen(),
+      const OzetScreen(),
+      if (!isSaha) const AyarlarScreen(),
+    ];
+    
+    final activeDestinations = [
+      const NavigationDestination(
+        icon: Icon(Icons.receipt_long_outlined),
+        selectedIcon: Icon(Icons.receipt_long),
+        label: 'Harcamalar',
+      ),
+      const NavigationDestination(
+        icon: Icon(Icons.pie_chart_outline),
+        selectedIcon: Icon(Icons.pie_chart),
+        label: 'Özet',
+      ),
+      if (!isSaha)
+        const NavigationDestination(
+          icon: Icon(Icons.settings_outlined),
+          selectedIcon: Icon(Icons.settings),
+          label: 'Ayarlar',
+        ),
+    ];
+    
+    // Eğer index sınırların dışındaysa 0'a çek (Örn: Saha personeli login olunca)
+    if (_selectedIndex >= activeScreens.length) {
+      _selectedIndex = 0;
+    }
+
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: _screens,
+        children: activeScreens,
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -37,23 +68,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             _selectedIndex = index;
           });
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
-            label: 'Harcamalar',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.pie_chart_outline),
-            selectedIcon: Icon(Icons.pie_chart),
-            label: 'Özet',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Ayarlar',
-          ),
-        ],
+        destinations: activeDestinations,
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:igt_masraf_takip/services/harcama_service.dart';
 import 'package:igt_masraf_takip/models/harcama.dart';
+import 'package:igt_masraf_takip/providers/auth_provider.dart';
 
 /// Harcama servisi provider'ı
 final harcamaServiceProvider = Provider<HarcamaService>(
@@ -17,8 +18,14 @@ final selectedMonthProvider = StateProvider<DateTime>(
 final harcamalarProvider = FutureProvider<List<Harcama>>((ref) async {
   final service = ref.watch(harcamaServiceProvider);
   final selectedMonth = ref.watch(selectedMonthProvider);
+  final personel = ref.watch(currentPersonelProvider).value;
 
-  return service.getHarcamalar(ay: selectedMonth);
+  String? pId;
+  if (personel != null && personel.isSaha) {
+    pId = personel.id;
+  }
+
+  return service.getHarcamalar(ay: selectedMonth, personelId: pId);
 });
 
 // ─── FİLTRE PROVİDER'LAR ────────────────────────────────────

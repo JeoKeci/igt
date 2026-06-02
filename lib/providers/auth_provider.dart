@@ -16,6 +16,9 @@ final authStateProvider = StreamProvider<AuthState>((ref) {
 
 /// Giriş yapmış kullanıcının personel kaydını getirir
 final currentPersonelProvider = FutureProvider<Personel?>((ref) async {
+  // Auth durumu değiştiğinde bu provider'ın yeniden çalışmasını sağla
+  ref.watch(authStateProvider);
+  
   final authService = ref.watch(authServiceProvider);
   final currentUser = authService.currentUser;
 
