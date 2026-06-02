@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import '../providers/auth_provider.dart';
 import '../providers/harcama_provider.dart';
 import '../providers/lookup_provider.dart';
+import '../providers/ozet_provider.dart';
 
 import '../services/storage_service.dart';
 import '../utils/validators.dart';
@@ -143,6 +144,8 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('✓ Harcama eklendi')),
         );
+        ref.invalidate(harcamalarProvider);
+        ref.invalidate(ozetProvider);
         Navigator.pop(context);
       }
     } catch (e) {

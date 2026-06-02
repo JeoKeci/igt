@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/auth_provider.dart';
+import 'kategori_yonetimi_screen.dart';
 
 class AyarlarScreen extends ConsumerWidget {
   const AyarlarScreen({super.key});
@@ -125,11 +126,13 @@ class AyarlarScreen extends ConsumerWidget {
                     ),
                     ListTile(
                       leading: const Icon(Icons.category),
-                      title: const Text('Kategoriler'),
+                      title: const Text('Harcama Kategorileri'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
-                        // TODO: Kategori yönetim ekranı
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kategori yönetimi (Faz 2)')));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const KategoriYonetimiScreen()),
+                        );
                       },
                     ),
                     ListTile(

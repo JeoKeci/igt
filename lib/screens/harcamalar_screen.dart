@@ -86,15 +86,17 @@ class HarcamalarScreen extends ConsumerWidget {
           onRetry: () => ref.refresh(harcamalarProvider),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const HarcamaEkleScreen()),
-          );
-          ref.invalidate(harcamalarProvider);
-          ref.invalidate(ozetProvider);
-        },
-        child: const Icon(Icons.add),
+      endDrawer: const Drawer(
+        width: 380, // Telefondaysa ~tam ekran, tabletteyse sağda 380px kaplar
+        child: HarcamaEkleScreen(),
+      ),
+      floatingActionButton: Builder(
+        builder: (context) => FloatingActionButton(
+          onPressed: () {
+            Scaffold.of(context).openEndDrawer();
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
