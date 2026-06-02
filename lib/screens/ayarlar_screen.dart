@@ -4,6 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/auth_provider.dart';
 import 'kategori_yonetimi_screen.dart';
 import 'odeme_sekilleri_yonetimi_screen.dart';
+import 'bolumler_yonetimi_screen.dart';
+import 'projeler_yonetimi_screen.dart';
 
 class AyarlarScreen extends ConsumerWidget {
   const AyarlarScreen({super.key});
@@ -152,7 +154,10 @@ class AyarlarScreen extends ConsumerWidget {
                       title: const Text('Bölümler'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bölümler (Faz 2)')));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const BolumlerYonetimiScreen()),
+                        );
                       },
                     ),
                     ListTile(
@@ -160,7 +165,10 @@ class AyarlarScreen extends ConsumerWidget {
                       title: const Text('Projeler'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Projeler (Faz 2)')));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ProjelerYonetimiScreen()),
+                        );
                       },
                     ),
                   ],
