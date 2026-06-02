@@ -154,14 +154,20 @@ class HarcamaService {
           (personelDagilimi[personelAdi] ?? 0) + tutar;
     }
 
+    List<Map<String, dynamic>> toSortedList(Map<String, double> map) {
+      final list = map.entries.map((e) => {'ad': e.key, 'toplam': e.value}).toList();
+      list.sort((a, b) => (b['toplam'] as double).compareTo(a['toplam'] as double));
+      return list;
+    }
+
     return {
       'toplamTutar': toplamTutar,
       'toplamKdv': toplamKdv,
       'toplamMatrah': toplamMatrah,
       'harcamaSayisi': harcamalar.length,
-      'odemeSekliDagilimi': odemeSekliDagilimi,
-      'kategoriDagilimi': kategoriDagilimi,
-      'personelDagilimi': personelDagilimi,
+      'odemeSekliKirilim': toSortedList(odemeSekliDagilimi),
+      'kategoriKirilim': toSortedList(kategoriDagilimi),
+      'kisiKirilim': toSortedList(personelDagilimi),
     };
   }
 }
