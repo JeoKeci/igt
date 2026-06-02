@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:igt_masraf_takip/models/kategori.dart';
 import 'package:igt_masraf_takip/models/odeme_sekli.dart';
@@ -192,18 +194,38 @@ class LookupService {
     final String url = const String.fromEnvironment('SUPABASE_URL');
     final String anonKey = const String.fromEnvironment('SUPABASE_ANON_KEY');
     
-    final tempClient = SupabaseClient(url, anonKey);
-    
+    // tempClient kullanımı (Gotrue memory storage hatası verebiliyor) yerine
+    // doğrudan REST API ile signUp çağrısı yapıyoruz ki mevcut oturum etkilenmesin.
+    String? newUserId;
     try {
-      final authResponse = await tempClient.auth.signUp(
-        email: eposta.trim(),
-        password: sifre,
-      );
+      final request = await HttpClient().postUrl(Uri.parse('$url/auth/v1/signup'));
+      request.headers.set('apikey', anonKey);
+      request.headers.set('Content-Type', 'application/json');
+      request.add(utf8.encode(jsonEncode({
+        'email': eposta.trim(),
+        'password': sifre,
+      })));
 
-      final newUserId = authResponse.user?.id;
-      if (newUserId == null) throw Exception("Kullanıcı oluşturulamadı (User ID boş geldi)");
+      final authResponse = await request.close();
+      final responseBody = await authResponse.transform(utf8.decoder).join();
+      
+      if (authResponse.statusCode >= 400) {
+        final errJson = jsonDecode(responseBody);
+        throw Exception(errJson['msg'] ?? errJson['message'] ?? 'Kullanıcı oluşturulamadı');
+      }
+      
+      final json = jsonDecode(responseBody);
+      // Yanıt formati "user": {"id": ...} veya doğrudan {"id": ...} olabilir
+      newUserId = json['user']?['id'] ?? json['id'];
+      
+      if (newUserId == null) {
+        throw Exception("Kullanıcı oluşturulamadı (User ID boş geldi)");
+      }
+    } catch (e) {
+      throw Exception("Auth Hatası: $e");
+    }
 
-      final data = {
+    final data = {
         'auth_user_id': newUserId,
         'ad_soyad': adSoyad.trim(),
         'eposta': eposta.trim(),
@@ -219,9 +241,6 @@ class LookupService {
           .single();
 
       return Personel.fromJson(response);
-    } finally {
-      tempClient.dispose();
-    }
   }
 
   /// Personel güncelle
