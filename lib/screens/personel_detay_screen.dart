@@ -5,7 +5,7 @@ import 'package:igt_masraf_takip/models/maas_avansi.dart';
 import 'package:igt_masraf_takip/models/is_avansi.dart';
 import 'package:igt_masraf_takip/models/harcama.dart';
 import 'package:igt_masraf_takip/providers/personel_provider.dart';
-import 'package:igt_masraf_takip/providers/lookup_provider.dart';
+import 'package:igt_masraf_takip/providers/lookup_provider.dart' hide personellerProvider;
 import 'package:igt_masraf_takip/providers/harcama_provider.dart';
 import 'package:igt_masraf_takip/screens/harcama_detay_screen.dart';
 import 'package:igt_masraf_takip/widgets/loading_widget.dart';

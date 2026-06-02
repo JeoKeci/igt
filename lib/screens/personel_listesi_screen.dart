@@ -42,9 +42,11 @@ class PersonelListesiScreen extends ConsumerWidget {
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
               ),
-              value: TextEditingValue(
-                text: aramaQuery,
-                selection: TextSelection.collapsed(offset: aramaQuery.length),
+              controller: TextEditingController.fromValue(
+                TextEditingValue(
+                  text: aramaQuery,
+                  selection: TextSelection.collapsed(offset: aramaQuery.length),
+                ),
               ),
               onChanged: (val) {
                 ref.read(personelAramaQueryProvider.notifier).state = val;
