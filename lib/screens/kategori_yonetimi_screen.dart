@@ -158,6 +158,21 @@ class _KategoriYonetimiScreenState extends ConsumerState<KategoriYonetimiScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Harcama Kategorileri'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline),
+            onPressed: () {
+              final kategoriler = kategorilerAsync.value;
+              int nextNo = 1;
+              if (kategoriler != null && kategoriler.isNotEmpty) {
+                nextNo = kategoriler.map((e) => e.no).reduce((a, b) => a > b ? a : b) + 1;
+              }
+              _showFormDialog(autoNo: nextNo);
+            },
+            tooltip: 'Yeni Kategori Ekle',
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: kategorilerAsync.when(
         data: (kategoriler) {
@@ -198,18 +213,6 @@ class _KategoriYonetimiScreenState extends ConsumerState<KategoriYonetimiScreen>
           message: 'Kategoriler yüklenirken hata oluştu',
           onRetry: () => ref.refresh(kategorilerProvider),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          final kategoriler = kategorilerAsync.value;
-          int nextNo = 1;
-          if (kategoriler != null && kategoriler.isNotEmpty) {
-            nextNo = kategoriler.map((e) => e.no).reduce((a, b) => a > b ? a : b) + 1;
-          }
-          _showFormDialog(autoNo: nextNo);
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Yeni Kategori'),
       ),
     );
   }

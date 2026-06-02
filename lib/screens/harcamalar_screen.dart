@@ -17,23 +17,7 @@ class HarcamalarScreen extends ConsumerWidget {
     final selectedMonth = ref.watch(selectedMonthProvider);
     final harcamalarAsyncValue = ref.watch(filteredHarcamalarProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Harcamalar'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: AySecici(
-              selectedMonth: selectedMonth,
-              onChanged: (newMonth) {
-                ref.read(selectedMonthProvider.notifier).state = newMonth;
-              },
-            ),
-          ),
-        ),
-      ),
-      body: harcamalarAsyncValue.when(
+    final Widget bodyContent = harcamalarAsyncValue.when(
         data: (harcamalar) {
           if (harcamalar.isEmpty) {
             return const EmptyWidget(
@@ -85,18 +69,79 @@ class HarcamalarScreen extends ConsumerWidget {
           message: 'Harcamalar yüklenirken hata oluştu: $error',
           onRetry: () => ref.refresh(harcamalarProvider),
         ),
+      );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Harcamalar'),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: AySecici(
+              selectedMonth: selectedMonth,
+              onChanged: (newMonth) {
+                ref.read(selectedMonthProvider.notifier).state = newMonth;
+              },
+            ),
+          ),
+        ),
+      ),
+      body: Stack(
+        children: [
+          bodyContent,
+          // Yandan Açılır İnce Çubuk (Side Handle)
+          Positioned(
+            right: 0,
+            bottom: 120, // Özet barının üstünde kalsın
+            child: Builder(
+              builder: (context) => GestureDetector(
+                onTap: () {
+                  Scaffold.of(context).openEndDrawer();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 32),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: const Offset(-2, 0),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.chevron_left, color: Theme.of(context).colorScheme.onPrimary),
+                      RotatedBox(
+                        quarterTurns: 3,
+                        child: Text(
+                          'Ekle',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       endDrawer: const Drawer(
         width: 380, // Telefondaysa ~tam ekran, tabletteyse sağda 380px kaplar
         child: HarcamaEkleScreen(),
-      ),
-      floatingActionButton: Builder(
-        builder: (context) => FloatingActionButton(
-          onPressed: () {
-            Scaffold.of(context).openEndDrawer();
-          },
-          child: const Icon(Icons.add),
-        ),
       ),
     );
   }
