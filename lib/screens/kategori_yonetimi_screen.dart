@@ -4,7 +4,6 @@ import '../providers/lookup_provider.dart';
 import '../services/lookup_service.dart';
 import '../models/kategori.dart';
 import '../widgets/loading_widget.dart';
-import '../widgets/igt_error_widget.dart';
 
 class KategoriYonetimiScreen extends ConsumerStatefulWidget {
   const KategoriYonetimiScreen({super.key});
