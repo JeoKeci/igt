@@ -8,6 +8,8 @@ import 'ozet_screen.dart';
 import 'ayarlar_screen.dart';
 import 'harcama_ekle_screen.dart';
 
+import 'personel_listesi_screen.dart';
+
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
@@ -25,12 +27,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     
     // Saha personeli mi kontrolü
     final isSaha = personelAsync.value?.isSaha ?? false;
+    final showManagerTabs = !isSaha && personelAsync.value != null;
     
-    // Saha personeline ayarları gösterme
+    // Saha personeline ayarları ve personel listesini gösterme
     final activeScreens = [
       const HarcamalarScreen(),
       const OzetScreen(),
-      if (!isSaha) const AyarlarScreen(),
+      if (showManagerTabs) const PersonelListesiScreen(),
+      if (showManagerTabs) const AyarlarScreen(),
     ];
     
     final activeDestinations = [
@@ -44,7 +48,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         selectedIcon: Icon(Icons.pie_chart),
         label: 'Özet',
       ),
-      if (!isSaha)
+      if (showManagerTabs)
+        const NavigationDestination(
+          icon: Icon(Icons.people_outline),
+          selectedIcon: Icon(Icons.people),
+          label: 'Personel',
+        ),
+      if (showManagerTabs)
         const NavigationDestination(
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings),

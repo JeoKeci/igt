@@ -25,6 +25,7 @@ class AppConstants {
   static const String odemeKrediKarti = 'kredi_karti';
   static const String odemeBanka = 'banka';
   static const String odemeCek = 'cek';
+  static const String odemeNakitAvans = 'NAKIT_AVANS';
 
   // Proje durumları
   static const String durumAktif = 'aktif';
