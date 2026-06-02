@@ -131,6 +131,7 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
         'proje_id': _selectedProjeId,
         'plaka_stok': _plakaStokController.text.isEmpty ? null : _plakaStokController.text,
         'personel_id': currentPersonel.id,
+        'created_by': currentPersonel.id,   // NOT NULL — zorunlu
         'fis_tutari': tutar,
         'kdv': kdv,
         'belge_url': belgeUrl,
