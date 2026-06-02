@@ -85,7 +85,6 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
       initialDate: _tarih,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-      locale: const Locale('tr', 'TR'),
     );
     if (picked != null && picked != _tarih) {
       setState(() {

@@ -84,6 +84,16 @@ class HarcamalarScreen extends ConsumerWidget {
           onRetry: () => ref.refresh(harcamalarProvider),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const HarcamaEkleScreen()),
+          );
+          ref.invalidate(harcamalarProvider);
+          ref.invalidate(ozetProvider);
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 

@@ -55,18 +55,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const HarcamaEkleScreen()),
-          );
-          // Ekleme ekranından dönüldüğünde verileri yenile
-          ref.invalidate(harcamalarProvider);
-          ref.invalidate(ozetProvider);
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Harcama Ekle'),
-      ),
     );
   }
 }
