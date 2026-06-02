@@ -834,7 +834,6 @@ class _PersonelDuzenleFormState extends ConsumerState<_PersonelDuzenleForm> {
       initialDate: _iseGirisTarihi ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-      locale: const Locale('tr', 'TR'),
     );
     if (picked != null) {
       setState(() {
@@ -849,7 +848,6 @@ class _PersonelDuzenleFormState extends ConsumerState<_PersonelDuzenleForm> {
       initialDate: _istenCikisTarihi ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-      locale: const Locale('tr', 'TR'),
     );
     if (picked != null) {
       setState(() {
@@ -1109,7 +1107,6 @@ class _MaasAvansiEkleDialogState extends ConsumerState<_MaasAvansiEkleDialog> {
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-      locale: const Locale('tr', 'TR'),
     );
     if (picked != null) {
       setState(() {
@@ -1227,7 +1224,6 @@ class _IsAvansiEkleDialogState extends ConsumerState<_IsAvansiEkleDialog> {
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-      locale: const Locale('tr', 'TR'),
     );
     if (picked != null) {
       setState(() {
