@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/harcama_provider.dart';
 import '../providers/ozet_provider.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/ay_secici.dart';
 import '../widgets/loading_widget.dart';
 import '../utils/formatters.dart';
@@ -33,15 +35,51 @@ class _OzetScreenState extends ConsumerState<OzetScreen> {
     }
   }
 
+  Future<void> _handleLogout(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Çıkış Yap'),
+        content: const Text('Hesabınızdan çıkış yapmak istediğinize emin misiniz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Vazgeç'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            child: const Text('Çıkış Yap'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await Supabase.instance.client.auth.signOut();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectedMonth = ref.watch(selectedMonthProvider);
     final ozetAsync = ref.watch(ozetProvider);
+    final personelAsync = ref.watch(currentPersonelProvider);
+    final isSaha = personelAsync.value?.isSaha ?? false;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aylık Özet'),
         actions: [
+          if (isSaha)
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () => _handleLogout(context),
+              tooltip: 'Çıkış Yap',
+            ),
           _excelYukleniyor
               ? const Padding(
                   padding: EdgeInsets.all(14),
