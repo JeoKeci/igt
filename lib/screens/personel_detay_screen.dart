@@ -7,6 +7,7 @@ import 'package:igt_masraf_takip/models/harcama.dart';
 import 'package:igt_masraf_takip/providers/personel_provider.dart';
 import 'package:igt_masraf_takip/providers/lookup_provider.dart' hide personellerProvider;
 import 'package:igt_masraf_takip/providers/harcama_provider.dart';
+import 'package:igt_masraf_takip/providers/mutabakat_provider.dart';
 import 'package:igt_masraf_takip/screens/harcama_detay_screen.dart';
 import 'package:igt_masraf_takip/widgets/loading_widget.dart';
 import 'package:igt_masraf_takip/utils/formatters.dart';
@@ -54,7 +55,7 @@ class _PersonelDetayIcerikState extends ConsumerState<_PersonelDetayIcerik>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -170,7 +171,9 @@ class _PersonelDetayIcerikState extends ConsumerState<_PersonelDetayIcerik>
           // Tab Bar
           TabBar(
             controller: _tabController,
+            isScrollable: true,
             tabs: const [
+              Tab(text: 'Mutabakat (Ekstre)'),
               Tab(text: 'Özlük & Maaş'),
               Tab(text: 'Maaş Avansları'),
               Tab(text: 'İş Avansları'),
@@ -182,6 +185,7 @@ class _PersonelDetayIcerikState extends ConsumerState<_PersonelDetayIcerik>
             child: TabBarView(
               controller: _tabController,
               children: [
+                _MutabakatTab(personelId: p.id, personelAd: p.adSoyad),
                 _OzlukTab(p: p),
                 _MaasAvanslariTab(personelId: p.id),
                 _IsAvanslariTab(personelId: p.id),
@@ -1214,7 +1218,6 @@ class _IsAvansiEkleDialogState extends ConsumerState<_IsAvansiEkleDialog> {
   final _formKey = GlobalKey<FormState>();
   final _tutarController = TextEditingController();
   final _aciklamaController = TextEditingController();
-  String? _selectedProjeId;
   DateTime _selectedDate = DateTime.now();
   bool _isSaving = false;
 
@@ -1245,7 +1248,6 @@ class _IsAvansiEkleDialogState extends ConsumerState<_IsAvansiEkleDialog> {
             tutar: tutar,
             tarih: _selectedDate,
             aciklama: _aciklamaController.text.trim().isEmpty ? null : _aciklamaController.text.trim(),
-            projeId: _selectedProjeId,
           );
       ref.invalidate(personelFinansalOzetProvider(widget.personelId));
       if (mounted) {
@@ -1276,8 +1278,6 @@ class _IsAvansiEkleDialogState extends ConsumerState<_IsAvansiEkleDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final projelerAsync = ref.watch(projelerProvider);
-
     return AlertDialog(
       title: const Text('İş Avansı Gönder'),
       content: Form(
@@ -1301,24 +1301,6 @@ class _IsAvansiEkleDialogState extends ConsumerState<_IsAvansiEkleDialog> {
                 ),
               ),
               const SizedBox(height: 12),
-              projelerAsync.when(
-                data: (projeler) => DropdownButtonFormField<String?>(
-                  value: _selectedProjeId,
-                  decoration: const InputDecoration(labelText: 'İlgili Proje (İsteğe Bağlı)', prefixIcon: Icon(Icons.business)),
-                  items: [
-                    const DropdownMenuItem<String?>(value: null, child: Text('Seçilmedi')),
-                    ...projeler.map((p) => DropdownMenuItem<String?>(value: p.id, child: Text(p.ad))),
-                  ],
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedProjeId = val;
-                    });
-                  },
-                ),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, __) => const Text('Projeler yüklenemedi'),
-              ),
-              const SizedBox(height: 12),
               TextFormField(
                 controller: _aciklamaController,
                 decoration: const InputDecoration(labelText: 'Açıklama', prefixIcon: Icon(Icons.description)),
@@ -1337,5 +1319,308 @@ class _IsAvansiEkleDialogState extends ConsumerState<_IsAvansiEkleDialog> {
         ),
       ],
     );
+  }
+}
+
+// ─── SEKME 4: MUTABAKAT (EKSTRE) TAB ───────────────────────────────
+class _MutabakatTab extends ConsumerWidget {
+  final String personelId;
+  final String personelAd;
+
+  const _MutabakatTab({required this.personelId, required this.personelAd});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncData = ref.watch(filteredMutabakatProvider(personelId));
+    final filtre = ref.watch(mutabakatFiltreProvider);
+
+    return asyncData.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Hata: $err')),
+      data: (data) {
+        final hareketler = data['hareketler'] as List;
+        final bakiye = data['bakiye'] as double;
+        final maasAvansiNet = data['maasAvansiNet'] as double;
+        final isAvansiNet = data['isAvansiNet'] as double;
+
+        final isBakiyeNegatif = bakiye < 0; // Personel borçlu
+        final isBakiyePozitif = bakiye > 0; // Firma borçlu
+
+        return Column(
+          children: [
+            // Bakiye Kartı
+            Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isBakiyePozitif ? Colors.green.shade50 : (isBakiyeNegatif ? Colors.red.shade50 : Colors.grey.shade100),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isBakiyePozitif ? Colors.green.shade200 : (isBakiyeNegatif ? Colors.red.shade200 : Colors.grey.shade300),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'KÜMÜLATİF BAKİYE',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    tutarFormat(bakiye.abs()),
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: isBakiyePozitif ? Colors.green.shade700 : (isBakiyeNegatif ? Colors.red.shade700 : Colors.grey.shade700),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isBakiyePozitif
+                        ? 'Firma size ${tutarFormat(bakiye.abs())} borçlu'
+                        : (isBakiyeNegatif ? 'Firmaya ${tutarFormat(bakiye.abs())} borçlusunuz' : 'Hesap kapalı'),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isBakiyePozitif ? Colors.green.shade700 : (isBakiyeNegatif ? Colors.red.shade700 : Colors.grey.shade700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Aksiyon Butonları (Muhasebe/Yönetici)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.money_off),
+                      label: const Text('Nakit İade'),
+                      onPressed: () => _showIslemDialog(context, ref, 'iade'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.account_balance_wallet),
+                      label: const Text('Kesinti'),
+                      onPressed: () => _showIslemDialog(context, ref, 'kesinti'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Filtreler
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  _buildChip(ref, 'tumu', 'Tümü', filtre),
+                  const SizedBox(width: 8),
+                  _buildChip(ref, 'is_avansi', 'İş Avansları', filtre),
+                  const SizedBox(width: 8),
+                  _buildChip(ref, 'maas_avansi', 'Maaş Avansları', filtre),
+                  const SizedBox(width: 8),
+                  _buildChip(ref, 'harcama', 'Harcamalar', filtre),
+                  const SizedBox(width: 8),
+                  _buildChip(ref, 'iade_kesinti', 'İadeler & Kesintiler', filtre),
+                ],
+              ),
+            ),
+
+            // Liste
+            Expanded(
+              child: ListView.builder(
+                itemCount: hareketler.length,
+                itemBuilder: (context, index) {
+                  final h = hareketler[index];
+                  final isPositive = h.imzaliTutar > 0;
+                  final isNegative = h.imzaliTutar < 0;
+                  
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: isPositive ? Colors.green.shade100 : (isNegative ? Colors.red.shade100 : Colors.grey.shade200),
+                      child: Icon(
+                        isPositive ? Icons.add : (isNegative ? Icons.remove : Icons.horizontal_rule),
+                        color: isPositive ? Colors.green : (isNegative ? Colors.red : Colors.grey),
+                      ),
+                    ),
+                    title: Text(h.aciklama),
+                    subtitle: Text('${tarihFormat(h.tarih)} • ${h.tip}'),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          tutarFormat(h.imzaliTutar),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: isPositive ? Colors.green : (isNegative ? Colors.red : Colors.black),
+                          ),
+                        ),
+                        Text(
+                          'Bakiye: ${tutarFormat(h.yuruyenBakiye ?? 0)}',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Bilgilendirici Alt-Toplamlar
+            Container(
+              padding: const EdgeInsets.all(12),
+              color: Colors.grey.shade50,
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Text('Maaş avansı net: ${tutarFormat(maasAvansiNet)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                    Text('İş avansı net: ${tutarFormat(isAvansiNet)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildChip(WidgetRef ref, String value, String label, String currentFiltre) {
+    final isSelected = value == currentFiltre;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) {
+          ref.read(mutabakatFiltreProvider.notifier).state = value;
+        }
+      },
+    );
+  }
+
+  void _showIslemDialog(BuildContext context, WidgetRef ref, String tip) {
+    showDialog(
+      context: context,
+      builder: (context) => _MutabakatIslemDialog(personelId: personelId, tip: tip),
+    );
+  }
+}
+
+class _MutabakatIslemDialog extends ConsumerStatefulWidget {
+  final String personelId;
+  final String tip; // 'iade' veya 'kesinti'
+
+  const _MutabakatIslemDialog({required this.personelId, required this.tip});
+
+  @override
+  ConsumerState<_MutabakatIslemDialog> createState() => _MutabakatIslemDialogState();
+}
+
+class _MutabakatIslemDialogState extends ConsumerState<_MutabakatIslemDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _tutarController = TextEditingController();
+  final _aciklamaController = TextEditingController();
+  DateTime _tarih = DateTime.now();
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = widget.tip == 'iade' ? 'Nakit İade Gir' : 'Maaşa Yansıt / Kesinti Gir';
+    
+    return AlertDialog(
+      title: Text(title),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _tutarController,
+              decoration: const InputDecoration(labelText: 'Tutar', prefixText: '₺ '),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              validator: tutarValidator,
+            ),
+            const SizedBox(height: 16),
+            InkWell(
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _tarih,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2100),
+                );
+                if (picked != null) setState(() => _tarih = picked);
+              },
+              child: InputDecorator(
+                decoration: const InputDecoration(labelText: 'Tarih', prefixIcon: const Icon(Icons.calendar_today)),
+                child: Text(tarihFormat(_tarih)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _aciklamaController,
+              decoration: const InputDecoration(labelText: 'Açıklama (Opsiyonel)'),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('İptal'),
+        ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _kaydet,
+          child: _isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Kaydet'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _kaydet() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => _isLoading = true);
+    try {
+      final tutar = sayiParse(_tutarController.text) ?? 0.0;
+      final service = ref.read(mutabakatServiceProvider);
+      
+      if (widget.tip == 'iade') {
+        await service.nakitIadeGir(
+          personelId: widget.personelId,
+          tutar: tutar,
+          tarih: _tarih,
+          aciklama: _aciklamaController.text,
+        );
+      } else {
+        await service.maasKesintiGir(
+          personelId: widget.personelId,
+          tutar: tutar,
+          tarih: _tarih,
+          aciklama: _aciklamaController.text,
+        );
+      }
+      
+      if (mounted) {
+        ref.invalidate(mutabakatListesiProvider(widget.personelId));
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kayıt eklendi.')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 }

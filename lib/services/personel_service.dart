@@ -127,14 +127,12 @@ class PersonelService {
     required double tutar,
     required DateTime tarih,
     String? aciklama,
-    String? projeId,
   }) async {
     final data = {
       'personel_id': personelId,
       'tutar': tutar,
       'tarih': tarih.toIso8601String().split('T')[0],
       'aciklama': aciklama,
-      'proje_id': projeId,
       'tur': 'avans_verildi',
     };
 

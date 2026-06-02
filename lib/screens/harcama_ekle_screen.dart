@@ -32,6 +32,7 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
   String? _selectedKategoriId;
   String? _selectedOdemeSekliId;
   String? _selectedProjeId;
+  String _harcamaTipi = 'firma';
   final _plakaStokController = TextEditingController();
   final _tutarController = TextEditingController();
   final _kdvController = TextEditingController(text: '0');
@@ -130,6 +131,7 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
         'odeme_sekli_id': _selectedOdemeSekliId,
         'proje_id': _selectedProjeId,
         'plaka_stok': _plakaStokController.text.isEmpty ? null : _plakaStokController.text,
+        'harcama_tipi': _harcamaTipi,
         'personel_id': currentPersonel.id,
         'created_by': currentPersonel.id,   // NOT NULL — zorunlu
         'fis_tutari': tutar,
@@ -208,6 +210,37 @@ class _HarcamaEkleScreenState extends ConsumerState<HarcamaEkleScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
+              // Harcama Tipi Seçimi
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment<String>(
+                    value: 'firma',
+                    label: Text('Firma Gideri'),
+                    icon: Icon(Icons.business),
+                  ),
+                  ButtonSegment<String>(
+                    value: 'sahsi',
+                    label: Text('Şahsi Harcama'),
+                    icon: Icon(Icons.person),
+                  ),
+                ],
+                selected: {_harcamaTipi},
+                onSelectionChanged: (Set<String> newSelection) {
+                  setState(() {
+                    _harcamaTipi = newSelection.first;
+                  });
+                },
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _harcamaTipi == 'sahsi'
+                    ? 'Şahsi: firma kartı/avansından yapılan kişisel harcama; personelin hesabına borç yazılır.'
+                    : 'Firma Gideri: Proje, araç veya genel şirket gideri.',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              
               // 1. Tarih
               GestureDetector(
                 onTap: _isLoading ? null : _selectDate,

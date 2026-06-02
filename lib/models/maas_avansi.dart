@@ -3,6 +3,7 @@ class MaasAvansi {
   final String personelId;
   final DateTime tarih;
   final double tutar;
+  final String tur;
   final String? aciklama;
   final bool iptal;
   final String? createdBy;
@@ -16,6 +17,7 @@ class MaasAvansi {
     required this.personelId,
     required this.tarih,
     required this.tutar,
+    this.tur = 'avans',
     this.aciklama,
     this.iptal = false,
     this.createdBy,
@@ -32,6 +34,7 @@ class MaasAvansi {
       personelId: json['personel_id'] as String,
       tarih: DateTime.parse(json['tarih'] as String),
       tutar: (json['tutar'] as num).toDouble(),
+      tur: json['tur'] as String? ?? 'avans',
       aciklama: json['aciklama'] as String?,
       iptal: json['iptal'] as bool? ?? false,
       createdBy: json['created_by'] as String?,
@@ -46,6 +49,7 @@ class MaasAvansi {
       'personel_id': personelId,
       'tarih': tarih.toIso8601String().split('T')[0],
       'tutar': tutar,
+      'tur': tur,
       'aciklama': aciklama,
       'iptal': iptal,
       'created_by': createdBy,
@@ -58,6 +62,7 @@ class MaasAvansi {
     String? personelId,
     DateTime? tarih,
     double? tutar,
+    String? tur,
     String? aciklama,
     bool? iptal,
     String? createdBy,
@@ -69,6 +74,7 @@ class MaasAvansi {
       personelId: personelId ?? this.personelId,
       tarih: tarih ?? this.tarih,
       tutar: tutar ?? this.tutar,
+      tur: tur ?? this.tur,
       aciklama: aciklama ?? this.aciklama,
       iptal: iptal ?? this.iptal,
       createdBy: createdBy ?? this.createdBy,

@@ -15,6 +15,7 @@ class Harcama {
   final String? belgeUrl;
   final String? createdBy;
   final bool iptal;
+  final String harcamaTipi;
   final DateTime createdAt;
 
   // Joined fields for display (from related tables)
@@ -40,6 +41,7 @@ class Harcama {
     this.belgeUrl,
     this.createdBy,
     this.iptal = false,
+    this.harcamaTipi = 'firma',
     required this.createdAt,
     this.kategoriAdi,
     this.odemeSekliAdi,
@@ -104,6 +106,7 @@ class Harcama {
       belgeUrl: json['belge_url'] as String?,
       createdBy: json['created_by'] as String?,
       iptal: json['iptal'] as bool? ?? false,
+      harcamaTipi: json['harcama_tipi'] as String? ?? 'firma',
       createdAt: DateTime.parse(json['created_at'] as String),
       kategoriAdi: extractKategoriAdi(json),
       odemeSekliAdi: extractOdemeSekliAdi(json),
@@ -130,6 +133,7 @@ class Harcama {
       'belge_url': belgeUrl,
       'created_by': createdBy,
       'iptal': iptal,
+      'harcama_tipi': harcamaTipi,
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -152,6 +156,7 @@ class Harcama {
       'belge_url': belgeUrl,
       'created_by': createdBy,
       'iptal': iptal,
+      'harcama_tipi': harcamaTipi,
     };
   }
 
@@ -172,6 +177,7 @@ class Harcama {
     String? belgeUrl,
     String? createdBy,
     bool? iptal,
+    String? harcamaTipi,
     DateTime? createdAt,
     String? kategoriAdi,
     String? odemeSekliAdi,
@@ -195,6 +201,7 @@ class Harcama {
       belgeUrl: belgeUrl ?? this.belgeUrl,
       createdBy: createdBy ?? this.createdBy,
       iptal: iptal ?? this.iptal,
+      harcamaTipi: harcamaTipi ?? this.harcamaTipi,
       createdAt: createdAt ?? this.createdAt,
       kategoriAdi: kategoriAdi ?? this.kategoriAdi,
       odemeSekliAdi: odemeSekliAdi ?? this.odemeSekliAdi,
