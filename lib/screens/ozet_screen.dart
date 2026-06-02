@@ -5,18 +5,54 @@ import '../providers/ozet_provider.dart';
 import '../widgets/ay_secici.dart';
 import '../widgets/loading_widget.dart';
 import '../utils/formatters.dart';
+import '../services/excel_export_service.dart';
 
-class OzetScreen extends ConsumerWidget {
+class OzetScreen extends ConsumerStatefulWidget {
   const OzetScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OzetScreen> createState() => _OzetScreenState();
+}
+
+class _OzetScreenState extends ConsumerState<OzetScreen> {
+  bool _excelYukleniyor = false;
+
+  Future<void> _excelIndir() async {
+    final ay = ref.read(selectedMonthProvider);
+    setState(() => _excelYukleniyor = true);
+    try {
+      await ExcelExportService().exportVePaylas(ay);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Excel oluşturulurken hata: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _excelYukleniyor = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final selectedMonth = ref.watch(selectedMonthProvider);
     final ozetAsync = ref.watch(ozetProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aylık Özet'),
+        actions: [
+          _excelYukleniyor
+              ? const Padding(
+                  padding: EdgeInsets.all(14),
+                  child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.table_chart_outlined),
+                  tooltip: 'Excel İndir',
+                  onPressed: _excelIndir,
+                ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
