@@ -3,6 +3,7 @@ import 'package:igt_masraf_takip/models/kategori.dart';
 import 'package:igt_masraf_takip/models/odeme_sekli.dart';
 import 'package:igt_masraf_takip/models/proje.dart';
 import 'package:igt_masraf_takip/models/bolum.dart';
+import 'package:igt_masraf_takip/models/personel.dart';
 import 'package:igt_masraf_takip/utils/constants.dart';
 
 /// Referans tablolarına erişim servisi
@@ -155,6 +156,78 @@ class LookupService {
   Future<void> updateBolum(String id, Map<String, dynamic> data) async {
     await _client
         .from(AppConstants.tabloBolumler)
+        .update(data)
+        .eq('id', id);
+  }
+
+  // ─── PERSONELLER ───────────────────────────────────────────
+
+  /// Personelleri getirir
+  Future<List<Personel>> getPersoneller() async {
+    final response = await _client
+        .from(AppConstants.tabloPersonel)
+        .select()
+        .eq('iptal', false)
+        .order('ad_soyad', ascending: true);
+
+    return (response as List)
+        .map((json) => Personel.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Yeni personel ekle (ve auth user oluştur)
+  Future<Personel> addPersonel({
+    required String adSoyad,
+    required String eposta,
+    required String sifre,
+    required String rol,
+  }) async {
+    // Auth işlemini mevcut oturumu bozmadan yapmak için geçici bir Supabase Client oluşturuyoruz.
+    // Uygulama bu işlemi service_role olmadan yapabilsin diye auth.signUp kullanıyoruz,
+    // ancak adminin oturumunu bozmaması için yeni bir instance şart.
+    // Not: Normalde auth signup email verification isterse, kullanıcı oturum açmaz,
+    // verification kapalıysa oturum açar (ama secondary client'ta açtığı için ana client'ı bozmaz).
+    
+    // config'i import etmeden manuel environment değişkenlerini okuyoruz
+    final String url = const String.fromEnvironment('SUPABASE_URL');
+    final String anonKey = const String.fromEnvironment('SUPABASE_ANON_KEY');
+    
+    final tempClient = SupabaseClient(url, anonKey);
+    
+    try {
+      final authResponse = await tempClient.auth.signUp(
+        email: eposta.trim(),
+        password: sifre,
+      );
+
+      final newUserId = authResponse.user?.id;
+      if (newUserId == null) throw Exception("Kullanıcı oluşturulamadı (User ID boş geldi)");
+
+      final data = {
+        'auth_user_id': newUserId,
+        'ad_soyad': adSoyad.trim(),
+        'eposta': eposta.trim(),
+        'rol': rol,
+        'aktif': true,
+      };
+
+      // Ana client üzerinden personel tablosuna ekliyoruz
+      final response = await _client
+          .from(AppConstants.tabloPersonel)
+          .insert(data)
+          .select()
+          .single();
+
+      return Personel.fromJson(response);
+    } finally {
+      tempClient.dispose();
+    }
+  }
+
+  /// Personel güncelle
+  Future<void> updatePersonel(String id, Map<String, dynamic> data) async {
+    await _client
+        .from(AppConstants.tabloPersonel)
         .update(data)
         .eq('id', id);
   }

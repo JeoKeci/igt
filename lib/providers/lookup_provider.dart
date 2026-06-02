@@ -5,6 +5,7 @@ import 'package:igt_masraf_takip/models/kategori.dart';
 import 'package:igt_masraf_takip/models/odeme_sekli.dart';
 import 'package:igt_masraf_takip/models/proje.dart';
 import 'package:igt_masraf_takip/models/bolum.dart';
+import 'package:igt_masraf_takip/models/personel.dart';
 
 /// Lookup servisi provider'ı
 final lookupServiceProvider = Provider<LookupService>(
@@ -33,4 +34,10 @@ final projelerProvider = FutureProvider<List<Proje>>((ref) async {
 final bolumlerProvider = FutureProvider<List<Bolum>>((ref) async {
   final service = ref.watch(lookupServiceProvider);
   return service.getBolumler();
+});
+
+/// Personeller provider'ı
+final personellerProvider = FutureProvider<List<Personel>>((ref) async {
+  final service = ref.watch(lookupServiceProvider);
+  return service.getPersoneller();
 });

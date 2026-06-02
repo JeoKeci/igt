@@ -6,6 +6,7 @@ import 'kategori_yonetimi_screen.dart';
 import 'odeme_sekilleri_yonetimi_screen.dart';
 import 'bolumler_yonetimi_screen.dart';
 import 'projeler_yonetimi_screen.dart';
+import 'personel_yonetimi_screen.dart';
 
 class AyarlarScreen extends ConsumerWidget {
   const AyarlarScreen({super.key});
@@ -127,6 +128,18 @@ class AyarlarScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    ListTile(
+                      leading: const Icon(Icons.people),
+                      title: const Text('Personel Yönetimi'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const PersonelYonetimiScreen()),
+                        );
+                      },
+                    ),
+                    const Divider(),
                     ListTile(
                       leading: const Icon(Icons.category),
                       title: const Text('Harcama Kategorileri'),
